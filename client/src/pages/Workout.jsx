@@ -26,7 +26,7 @@ export default function Workout() {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
 
-    await fetch("http://localhost:5000/api/progress/update", {
+    await fetch("http://localhost:5001/api/progress/update", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

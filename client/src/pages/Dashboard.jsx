@@ -157,11 +157,11 @@ useEffect(() => {
   const fetchData = async () => {
     try {
       const progressRes = await axios.get(
-        `http://localhost:5000/api/progress/${user._id}`
+        `http://localhost:5001/api/progress/${user._id}`
       );
 
       const caloriesRes = await axios.get(
-        `http://localhost:5000/api/calories/${user._id}`
+        `http://localhost:5001/api/calories/${user._id}`
       );
 
       setUserProgress({
@@ -183,11 +183,11 @@ useEffect(() => {
   const progress = Math.min(Math.round((completed / total) * 100), 100);
 
   const navItems = [
-    { icon: '🏋️', label: 'Workout', path: "/workout" },
-    { icon: '🥗', label: 'Diet' },
-    { icon: '🔥', label: 'Calories' },
-    { icon: '📈', label: 'Progress' },
-    { icon: '🤖', label: 'Chatbot' },
+  { icon: '🏋️', label: 'Workout', path: "/workout" },
+  { icon: '🥗', label: 'Diet', path: "/diet" },
+  { icon: '🔥', label: 'Calories' },
+  { icon: '📈', label: 'Progress' },
+  { icon: '🤖', label: 'Chatbot', path: "/coach" }
   ];
 
   const moduleItems = [

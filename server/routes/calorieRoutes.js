@@ -6,18 +6,20 @@ const Calories = require("../Models/Calories");
 // GET USER CALORIES
 router.get("/:userId", async (req, res) => {
   try {
+
     const today = new Date().toISOString().slice(0, 10);
 
     let data = await Calories.findOne({
       userId: req.params.userId,
-      date: today,
+      date: today
     });
 
     if (!data) {
       data = await Calories.create({
         userId: req.params.userId,
         calories: 0,
-        date: today,
+        goal: 0,
+        date: today
       });
     }
 
@@ -31,24 +33,33 @@ router.get("/:userId", async (req, res) => {
 
 // UPDATE CALORIES
 router.post("/update", async (req, res) => {
+
   try {
-    const { userId, calories } = req.body;
+
+    const { userId, calories, goal } = req.body;
 
     const today = new Date().toISOString().slice(0, 10);
 
     let data = await Calories.findOne({
       userId,
-      date: today,
+      date: today
     });
 
     if (!data) {
+
       data = new Calories({
         userId,
         calories,
-        date: today,
+        goal,
+        date: today
       });
+
     } else {
-      data.calories += calories;
+
+      // replace calories (not add)
+      data.calories = calories;
+      data.goal = goal;
+
     }
 
     await data.save();
@@ -56,8 +67,11 @@ router.post("/update", async (req, res) => {
     res.json(data);
 
   } catch (err) {
+
     res.status(500).json({ message: "Error updating calories" });
+
   }
+
 });
 
 module.exports = router;
