@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const calorieRoutes = require("./routes/calorieRoutes");
+const aiCoachRoutes = require("./routes/aiCoachRoutes");
 
 const app = express();
 
@@ -17,7 +19,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/calories", calorieRoutes);
-
+app.use("/api/ai-coach", aiCoachRoutes);
 // Root API test
 app.get("/", (req, res) => {
   res.send("Backend API Working 🚀");

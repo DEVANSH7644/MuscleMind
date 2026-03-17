@@ -210,25 +210,25 @@ export default function Coach() {
     if (textareaRef.current) textareaRef.current.style.height = "24px";
 
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer YOUR_API_KEY",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: "You are a professional fitness coach. Be concise, motivating, and practical. Use short paragraphs." },
-            ...messages,
-            userMsg,
-          ],
-        }),
-      });
-      const data = await response.json();
-      const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't process that. Please try again.";
-      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-    } catch {
+  const response = await fetch("http://localhost:5001/api/ai-coach", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: q,
+      user: user,
+      calories: JSON.parse(localStorage.getItem("calories"))
+    }),
+  });
+
+  const data = await response.json();
+
+  setMessages((prev) => [
+    ...prev,
+    { role: "assistant", content: data.reply },
+  ]);
+} catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Please check your API key and try again." }]);
     } finally {
       setLoading(false);
@@ -445,7 +445,7 @@ export default function Coach() {
               </button>
             </div>
             <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 10, letterSpacing: "0.03em", textAlign: "center" }}>
-              Powered by GPT-4o Mini · Your personal AI fitness coach
+              Powered by Gemini AI · Your personal AI fitness coach
             </p>
           </div>
         </div>
