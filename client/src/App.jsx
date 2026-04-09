@@ -9,6 +9,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Workout from "./pages/Workout";
 import Diet from "./pages/Diet";
 import Coach from "./pages/Coach";
+import Calories from "./pages/Calories";
+import Progress from "./pages/Progress";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/workout" element={<Workout />} />
         <Route path="/diet" element={<Diet />} />
         <Route path="/coach" element={<Coach />} />
+        <Route path="/calories" element={<Calories />} />
+        <Route path="/progress" element={<Progress />} />
       </Routes>
     </BrowserRouter>
   );

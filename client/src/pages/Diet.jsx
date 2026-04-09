@@ -19,12 +19,11 @@ const GlobalStyles = () => (
       --border: rgba(255,255,255,0.05);
       --text: #f0f0f0;
       --muted: #555;
-      --muted2: #888;
+      --muted2: #ffffff;
     }
 
     body { background: var(--bg); }
 
-    /* --- Sidebar --- */
     .sidebar-item {
       display: flex; align-items: center; gap: 12px;
       padding: 11px 14px; border-radius: 10px; cursor: pointer;
@@ -37,7 +36,7 @@ const GlobalStyles = () => (
       background: linear-gradient(90deg, var(--orange-glow), transparent);
       opacity: 0; transition: opacity 0.2s ease;
     }
-    .sidebar-item:hover { color: #ddd; }
+    .sidebar-item:hover { color: #fff; }
     .sidebar-item:hover::before { opacity: 0.5; }
     .sidebar-item.active {
       color: var(--orange);
@@ -46,7 +45,6 @@ const GlobalStyles = () => (
     }
     .sidebar-item.active::before { opacity: 1; }
 
-    /* --- Goal buttons --- */
     .goal-btn {
       flex: 1; padding: 12px 10px; border-radius: 12px; cursor: pointer;
       border: 1px solid var(--border); background: var(--surface2);
@@ -64,7 +62,6 @@ const GlobalStyles = () => (
       box-shadow: 0 4px 20px rgba(255,85,0,0.15);
     }
 
-    /* --- Diet type toggle --- */
     .diet-type-btn {
       flex: 1; padding: 11px 14px; border-radius: 10px; cursor: pointer;
       border: 1px solid var(--border); background: var(--surface2);
@@ -80,7 +77,6 @@ const GlobalStyles = () => (
       color: var(--orange);
     }
 
-    /* --- Meal option buttons --- */
     .meal-option-btn {
       display: flex; align-items: center; justify-content: space-between;
       width: 100%; padding: 14px 16px; border-radius: 12px;
@@ -101,7 +97,6 @@ const GlobalStyles = () => (
     }
     .meal-option-btn:hover::before { opacity: 1; }
 
-    /* --- Selected meal rows --- */
     .meal-row {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px; border-radius: 10px;
@@ -119,7 +114,6 @@ const GlobalStyles = () => (
     }
     .remove-btn:hover { background: rgba(255,60,60,0.18); border-color: rgba(255,60,60,0.3); }
 
-    /* --- Suggested plan items --- */
     .plan-meal-block {
       padding: 16px; border-radius: 12px;
       background: var(--surface2); border: 1px solid var(--border);
@@ -127,7 +121,6 @@ const GlobalStyles = () => (
     }
     .plan-meal-block:hover { border-color: rgba(255,85,0,0.15); }
 
-    /* --- Download button --- */
     .download-btn {
       display: inline-flex; align-items: center; gap: 10px;
       padding: 14px 28px; border-radius: 12px; cursor: pointer;
@@ -143,7 +136,6 @@ const GlobalStyles = () => (
     }
     .download-btn:active { transform: translateY(0); }
 
-    /* --- Weight input --- */
     .weight-input {
       padding: 12px 16px; width: 120px;
       background: var(--surface2); border: 1px solid rgba(255,255,255,0.08);
@@ -157,7 +149,6 @@ const GlobalStyles = () => (
       box-shadow: 0 0 0 3px rgba(255,85,0,0.1);
     }
 
-    /* --- Animations --- */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -296,11 +287,12 @@ export default function Diet() {
     doc.save(`musclemind-diet-${goalType}.pdf`);
   };
 
+  // ✅ FIXED: all paths added
   const navItems = [
     { icon: "🏋️", label: "Workout", path: "/workout" },
     { icon: "🥗", label: "Diet", path: "/diet" },
-    { icon: "🔥", label: "Calories" },
-    { icon: "📈", label: "Progress" },
+    { icon: "🔥", label: "Calories", path: "/calories" },
+    { icon: "📈", label: "Progress", path: "/progress" },
     { icon: "🤖", label: "Chatbot", path: "/coach" },
   ];
 
@@ -384,8 +376,6 @@ export default function Diet() {
 
           {/* ── Row 1: Weight + Calorie Stats ── */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 16 }} className="fade-up-2">
-
-            {/* Weight card */}
             <div style={S.card}>
               <p style={S.cardLabel}>YOUR WEIGHT</p>
               <div style={{ display: "flex", alignItems: "flex-end", gap: 10, marginTop: 8 }}>
@@ -402,7 +392,6 @@ export default function Diet() {
               </p>
             </div>
 
-            {/* Calorie stat cards */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
               {[
                 { label: "TARGET", value: `${targetCalories}`, unit: "kcal", accent: "#ff5500", icon: "🎯" },
@@ -458,17 +447,11 @@ export default function Diet() {
 
           {/* ── Row 2: Goal + Macros ── */}
           <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 16, marginBottom: 16 }} className="fade-up-3">
-
-            {/* Goal selector */}
             <div style={S.card}>
               <p style={S.cardLabel}>SELECT YOUR GOAL</p>
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 {goalOptions.map((g) => (
-                  <button
-                    key={g.key}
-                    className={`goal-btn ${goalType === g.key ? "active" : ""}`}
-                    onClick={() => setGoalType(g.key)}
-                  >
+                  <button key={g.key} className={`goal-btn ${goalType === g.key ? "active" : ""}`} onClick={() => setGoalType(g.key)}>
                     <span className="goal-icon">{g.icon}</span>
                     {g.label}
                     <span style={{ fontSize: 11, color: goalType === g.key ? "var(--orange)" : "var(--muted)", fontFamily: "'Bebas Neue', cursive", letterSpacing: "0.05em" }}>
@@ -479,7 +462,6 @@ export default function Diet() {
               </div>
             </div>
 
-            {/* Macro breakdown */}
             <div style={S.card}>
               <p style={S.cardLabel}>MACRO SPLIT</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
@@ -498,8 +480,6 @@ export default function Diet() {
 
           {/* ── Row 3: Diet Type + Meals ── */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16, marginBottom: 16 }} className="fade-up-4">
-
-            {/* Diet type */}
             <div style={S.card}>
               <p style={S.cardLabel}>DIET TYPE</p>
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
@@ -507,18 +487,12 @@ export default function Diet() {
                   { key: "veg", icon: "🥦", label: "Vegetarian" },
                   { key: "nonveg", icon: "🍗", label: "Non-Veg" },
                 ].map((d) => (
-                  <button
-                    key={d.key}
-                    className={`diet-type-btn ${dietType === d.key ? "active" : ""}`}
-                    onClick={() => setDietType(d.key)}
-                  >
+                  <button key={d.key} className={`diet-type-btn ${dietType === d.key ? "active" : ""}`} onClick={() => setDietType(d.key)}>
                     <span style={{ fontSize: 18 }}>{d.icon}</span>
                     {d.label}
                   </button>
                 ))}
               </div>
-
-              {/* Selected count badge */}
               {selectedMeals.length > 0 && (
                 <div style={{ marginTop: 20, padding: "10px 14px", borderRadius: 10, background: "var(--orange-glow)", border: "1px solid rgba(255,85,0,0.2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 12, color: "var(--muted2)", fontWeight: 600, letterSpacing: "0.06em" }}>MEALS LOGGED</span>
@@ -527,7 +501,6 @@ export default function Diet() {
               )}
             </div>
 
-            {/* Meal options */}
             <div style={S.card}>
               <p style={S.cardLabel}>ADD MEALS</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
@@ -536,9 +509,7 @@ export default function Diet() {
                     <span style={{ fontWeight: 500 }}>{meal.name}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <span style={{ fontSize: 11, color: "var(--muted)" }}>+{meal.calories} kcal</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", background: "rgba(255,85,0,0.1)", border: "1px solid rgba(255,85,0,0.15)", padding: "3px 10px", borderRadius: 100, letterSpacing: "0.05em" }}>
-                        ADD
-                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", background: "rgba(255,85,0,0.1)", border: "1px solid rgba(255,85,0,0.15)", padding: "3px 10px", borderRadius: 100, letterSpacing: "0.05em" }}>ADD</span>
                     </div>
                   </button>
                 ))}
@@ -548,18 +519,13 @@ export default function Diet() {
 
           {/* ── Row 4: Selected Meals + Diet Plan ── */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }} className="fade-up-5">
-
-            {/* Selected meals */}
             <div style={S.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <p style={S.cardLabel}>TODAY'S MEALS</p>
                 {selectedMeals.length > 0 && (
-                  <span style={{ fontSize: 13, fontFamily: "'Bebas Neue', cursive", color: "var(--orange)", letterSpacing: "0.05em" }}>
-                    {totalCalories} KCAL
-                  </span>
+                  <span style={{ fontSize: 13, fontFamily: "'Bebas Neue', cursive", color: "var(--orange)", letterSpacing: "0.05em" }}>{totalCalories} KCAL</span>
                 )}
               </div>
-
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
                 {selectedMeals.length === 0 ? (
                   <div style={{ padding: "32px 16px", textAlign: "center", borderRadius: 12, background: "var(--surface2)", border: "1px dashed rgba(255,255,255,0.07)" }}>
@@ -581,7 +547,6 @@ export default function Diet() {
               </div>
             </div>
 
-            {/* Suggested plan */}
             <div style={S.card}>
               <p style={S.cardLabel}>SUGGESTED PLAN</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
@@ -593,9 +558,7 @@ export default function Diet() {
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {meal.items.map((item, j) => (
-                        <span key={j} style={{ fontSize: 11, color: "#bbb", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 6, padding: "3px 9px", letterSpacing: "0.02em" }}>
-                          {item}
-                        </span>
+                        <span key={j} style={{ fontSize: 11, color: "#bbb", background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 6, padding: "3px 9px", letterSpacing: "0.02em" }}>{item}</span>
                       ))}
                     </div>
                   </div>
@@ -621,76 +584,16 @@ export default function Diet() {
 }
 
 const S = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "var(--bg)",
-    color: "var(--text)",
-    fontFamily: "'Outfit', sans-serif",
-    position: "relative",
-    overflow: "hidden",
-  },
-  sidebar: {
-    width: 230,
-    background: "var(--surface)",
-    padding: "28px 16px",
-    borderRight: "1px solid var(--border)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    position: "relative",
-    overflow: "hidden",
-    flexShrink: 0,
-  },
-  logoWrap: {
-    display: "flex", alignItems: "center", gap: 12,
-    marginBottom: 28, paddingLeft: 4,
-  },
-  logoIcon: {
-    width: 38, height: 38,
-    background: "linear-gradient(135deg, #ff5500, #ff8844)",
-    borderRadius: 11,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: "0 4px 20px rgba(255,85,0,0.4)",
-    fontWeight: 900, color: "#fff",
-    fontFamily: "'Bebas Neue', cursive",
-  },
+  container: { display: "flex", minHeight: "100vh", background: "var(--bg)", color: "var(--text)", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" },
+  sidebar: { width: 230, background: "var(--surface)", padding: "28px 16px", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden", flexShrink: 0 },
+  logoWrap: { display: "flex", alignItems: "center", gap: 12, marginBottom: 28, paddingLeft: 4 },
+  logoIcon: { width: 38, height: 38, background: "linear-gradient(135deg, #ff5500, #ff8844)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(255,85,0,0.4)", fontWeight: 900, color: "#fff", fontFamily: "'Bebas Neue', cursive" },
   logoText: { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "#e8e8e8", lineHeight: 1.1 },
-  logoSub:  { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "var(--orange)", lineHeight: 1.1 },
-  sidebarDivider: {
-    height: 1,
-    background: "linear-gradient(90deg, transparent, rgba(255,85,0,0.2), transparent)",
-    marginBottom: 16,
-  },
-  sidebarFooter: {
-    display: "flex", alignItems: "center", gap: 12,
-    padding: "14px 12px", borderRadius: 12,
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid var(--border)",
-  },
-  avatarCircle: {
-    width: 36, height: 36, borderRadius: "50%",
-    background: "linear-gradient(135deg, #ff5500, #ff8844)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    color: "#fff", flexShrink: 0,
-    boxShadow: "0 2px 12px rgba(255,85,0,0.35)",
-  },
-  content: {
-    flex: 1, padding: "40px 44px",
-    position: "relative", overflow: "hidden",
-  },
-  card: {
-    background: "var(--surface)",
-    padding: "20px 22px",
-    borderRadius: 16,
-    border: "1px solid var(--border)",
-    position: "relative",
-    overflow: "hidden",
-  },
-  cardLabel: {
-    fontSize: 11, fontWeight: 600,
-    letterSpacing: "0.12em",
-    color: "var(--muted2)",
-    textTransform: "uppercase",
-  },
+  logoSub: { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "var(--orange)", lineHeight: 1.1 },
+  sidebarDivider: { height: 1, background: "linear-gradient(90deg, transparent, rgba(255,85,0,0.2), transparent)", marginBottom: 16 },
+  sidebarFooter: { display: "flex", alignItems: "center", gap: 12, padding: "14px 12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" },
+  avatarCircle: { width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #ff5500, #ff8844)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, boxShadow: "0 2px 12px rgba(255,85,0,0.35)" },
+  content: { flex: 1, padding: "40px 44px", position: "relative", overflow: "hidden" },
+  card: { background: "var(--surface)", padding: "20px 22px", borderRadius: 16, border: "1px solid var(--border)", position: "relative", overflow: "hidden", marginBottom: 0 },
+  cardLabel: { fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", color: "var(--muted2)", textTransform: "uppercase" },
 };

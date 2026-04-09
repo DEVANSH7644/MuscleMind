@@ -17,7 +17,7 @@ const GlobalStyles = () => (
       --border: rgba(255,255,255,0.05);
       --text: #f0f0f0;
       --muted: #555;
-      --muted2: #888;
+      --muted2: #ffffff;
     }
 
     body { background: var(--bg); }
@@ -34,7 +34,7 @@ const GlobalStyles = () => (
       background: linear-gradient(90deg, var(--orange-glow), transparent);
       opacity: 0; transition: opacity 0.2s ease;
     }
-    .sidebar-item:hover { color: #ddd; }
+    .sidebar-item:hover { color: #fff; }
     .sidebar-item:hover::before { opacity: 0.5; }
     .sidebar-item.active {
       color: var(--orange);
@@ -43,7 +43,6 @@ const GlobalStyles = () => (
     }
     .sidebar-item.active::before { opacity: 1; }
 
-    /* Chat bubbles */
     .bubble-user {
       align-self: flex-end;
       background: linear-gradient(135deg, #ff5500, #ff7733);
@@ -70,7 +69,6 @@ const GlobalStyles = () => (
       position: relative;
     }
 
-    /* Typing dots */
     .typing-dot {
       width: 7px; height: 7px; border-radius: 50%;
       background: var(--muted2); display: inline-block;
@@ -83,7 +81,6 @@ const GlobalStyles = () => (
       30%            { transform: translateY(-6px); opacity: 1; }
     }
 
-    /* Input */
     .chat-input {
       flex: 1;
       background: transparent;
@@ -99,7 +96,6 @@ const GlobalStyles = () => (
     }
     .chat-input::placeholder { color: var(--muted); }
 
-    /* Send button */
     .send-btn {
       width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
       background: linear-gradient(135deg, #ff5500, #ff8844);
@@ -112,7 +108,6 @@ const GlobalStyles = () => (
     .send-btn:active { transform: scale(0.97); }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-    /* Suggestion chips */
     .chip {
       padding: 8px 14px; border-radius: 100px;
       background: var(--surface2); border: 1px solid var(--border);
@@ -126,7 +121,6 @@ const GlobalStyles = () => (
       background: rgba(255,85,0,0.06);
     }
 
-    /* Scrollbar */
     .chat-scroll::-webkit-scrollbar { width: 4px; }
     .chat-scroll::-webkit-scrollbar-track { background: transparent; }
     .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
@@ -175,11 +169,12 @@ const SUGGESTIONS = [
   "How to avoid muscle soreness?",
 ];
 
+// ✅ FIXED: all paths added
 const navItems = [
   { icon: "🏋️", label: "Workout", path: "/workout" },
   { icon: "🥗", label: "Diet", path: "/diet" },
-  { icon: "🔥", label: "Calories" },
-  { icon: "📈", label: "Progress" },
+  { icon: "🔥", label: "Calories", path: "/calories" },
+  { icon: "📈", label: "Progress", path: "/progress" },
   { icon: "🤖", label: "Chatbot", path: "/coach" },
 ];
 
@@ -210,25 +205,19 @@ export default function Coach() {
     if (textareaRef.current) textareaRef.current.style.height = "24px";
 
     try {
-  const response = await fetch("http://localhost:5001/api/ai-coach", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message: q,
-      user: user,
-      calories: JSON.parse(localStorage.getItem("calories"))
-    }),
-  });
-
-  const data = await response.json();
-
-  setMessages((prev) => [
-    ...prev,
-    { role: "assistant", content: data.reply },
-  ]);
-} catch {
+      const response = await fetch("http://localhost:5001/api/ai-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: q,
+          user: user,
+          history: messages,
+          calories: JSON.parse(localStorage.getItem("calories")),
+        }),
+      });
+      const data = await response.json();
+      setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+    } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Please check your API key and try again." }]);
     } finally {
       setLoading(false);
@@ -236,10 +225,7 @@ export default function Coach() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   const handleInput = (e) => {
@@ -286,7 +272,6 @@ export default function Coach() {
             </nav>
           </div>
 
-          {/* Sidebar chat stats */}
           <div>
             {messages.length > 0 && (
               <div style={{ marginBottom: 12, padding: "14px 12px", borderRadius: 12, background: "rgba(255,85,0,0.06)", border: "1px solid rgba(255,85,0,0.12)" }}>
@@ -322,7 +307,6 @@ export default function Coach() {
         <div style={S.content}>
           <div className="orb" style={{ width: 400, height: 400, background: "radial-gradient(circle, rgba(255,85,0,0.05), transparent)", top: -80, right: -80, animationDelay: "2s" }} />
 
-          {/* Header */}
           <div style={S.header} className="fade-up-1">
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={S.coachAvatar}>
@@ -344,42 +328,25 @@ export default function Coach() {
             </div>
           </div>
 
-          {/* ── Messages ── */}
           <div className="chat-scroll" style={S.chatBox}>
-
-            {/* Empty state */}
             {isEmpty && (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 24, padding: "40px 20px" }}>
-                <div style={S.emptyIcon}>
-                  <span style={{ fontSize: 40 }}>🤖</span>
-                </div>
+                <div style={S.emptyIcon}><span style={{ fontSize: 40 }}>🤖</span></div>
                 <div style={{ textAlign: "center" }}>
-                  <h2 style={{ fontSize: 22, fontWeight: 700, color: "#ddd", marginBottom: 8, letterSpacing: "-0.01em" }}>
-                    Your AI Fitness Coach
-                  </h2>
-                  <p style={{ fontSize: 14, color: "var(--muted2)", lineHeight: 1.6, maxWidth: 380 }}>
-                    Ask me anything about workouts, nutrition, recovery, or building your perfect fitness plan.
-                  </p>
+                  <h2 style={{ fontSize: 22, fontWeight: 700, color: "#ddd", marginBottom: 8, letterSpacing: "-0.01em" }}>Your AI Fitness Coach</h2>
+                  <p style={{ fontSize: 14, color: "var(--muted2)", lineHeight: 1.6, maxWidth: 380 }}>Ask me anything about workouts, nutrition, recovery, or building your perfect fitness plan.</p>
                 </div>
-
-                {/* Suggestion chips */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 520 }}>
-                  {SUGGESTIONS.map((s, i) => (
-                    <button key={i} className="chip" onClick={() => sendMessage(s)}>{s}</button>
-                  ))}
+                  {SUGGESTIONS.map((s, i) => <button key={i} className="chip" onClick={() => sendMessage(s)}>{s}</button>)}
                 </div>
               </div>
             )}
 
-            {/* Messages */}
             {messages.map((msg, i) => (
               <div key={i} className="msg-in" style={{ display: "flex", flexDirection: "column", gap: 0, alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
-
-                {/* Label */}
                 <span style={{ fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 6, paddingLeft: msg.role === "user" ? 0 : 4, paddingRight: msg.role === "user" ? 4 : 0 }}>
                   {msg.role === "user" ? "YOU" : "AI COACH"}
                 </span>
-
                 <div className={msg.role === "user" ? "bubble-user" : "bubble-ai"}>
                   {msg.role === "assistant" && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
@@ -392,7 +359,6 @@ export default function Coach() {
               </div>
             ))}
 
-            {/* Typing indicator */}
             {loading && (
               <div className="msg-in" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0 }}>
                 <span style={{ fontSize: 10, color: "var(--muted)", letterSpacing: "0.1em", fontWeight: 600, marginBottom: 6, paddingLeft: 4 }}>AI COACH</span>
@@ -402,29 +368,21 @@ export default function Coach() {
                     <span style={{ fontSize: 11, color: "var(--orange)", fontWeight: 700, letterSpacing: "0.08em" }}>MUSCLE MIND COACH</span>
                   </div>
                   <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
+                    <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
                     <span style={{ fontSize: 11, color: "var(--muted)", marginLeft: 4 }}>thinking...</span>
                   </div>
                 </div>
               </div>
             )}
-
             <div ref={chatEndRef} />
           </div>
 
-          {/* ── Input Area ── */}
           <div style={S.inputArea}>
-            {/* Suggestion chips (shown after first message) */}
             {!isEmpty && (
               <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-                {SUGGESTIONS.slice(0, 3).map((s, i) => (
-                  <button key={i} className="chip" onClick={() => sendMessage(s)}>{s}</button>
-                ))}
+                {SUGGESTIONS.slice(0, 3).map((s, i) => <button key={i} className="chip" onClick={() => sendMessage(s)}>{s}</button>)}
               </div>
             )}
-
             <div style={S.inputBox}>
               <div style={{ flex: 1 }}>
                 <textarea
@@ -455,111 +413,20 @@ export default function Coach() {
 }
 
 const S = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "var(--bg)",
-    color: "var(--text)",
-    fontFamily: "'Outfit', sans-serif",
-    position: "relative",
-    overflow: "hidden",
-  },
-  sidebar: {
-    width: 230,
-    background: "var(--surface)",
-    padding: "28px 16px",
-    borderRight: "1px solid var(--border)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    position: "relative",
-    overflow: "hidden",
-    flexShrink: 0,
-  },
+  container: { display: "flex", minHeight: "100vh", background: "var(--bg)", color: "var(--text)", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" },
+  sidebar: { width: 230, background: "var(--surface)", padding: "28px 16px", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden", flexShrink: 0 },
   logoWrap: { display: "flex", alignItems: "center", gap: 12, marginBottom: 28, paddingLeft: 4 },
-  logoIcon: {
-    width: 38, height: 38,
-    background: "linear-gradient(135deg, #ff5500, #ff8844)",
-    borderRadius: 11,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: "0 4px 20px rgba(255,85,0,0.4)",
-    fontWeight: 900, color: "#fff",
-    fontFamily: "'Bebas Neue', cursive",
-  },
+  logoIcon: { width: 38, height: 38, background: "linear-gradient(135deg, #ff5500, #ff8844)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(255,85,0,0.4)", fontWeight: 900, color: "#fff", fontFamily: "'Bebas Neue', cursive" },
   logoText: { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "#e8e8e8", lineHeight: 1.1 },
-  logoSub:  { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "var(--orange)", lineHeight: 1.1 },
-  sidebarDivider: {
-    height: 1,
-    background: "linear-gradient(90deg, transparent, rgba(255,85,0,0.2), transparent)",
-    marginBottom: 16,
-  },
-  sidebarFooter: {
-    display: "flex", alignItems: "center", gap: 12,
-    padding: "14px 12px", borderRadius: 12,
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid var(--border)",
-  },
-  avatarCircle: {
-    width: 36, height: 36, borderRadius: "50%",
-    background: "linear-gradient(135deg, #ff5500, #ff8844)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    color: "#fff", flexShrink: 0,
-    boxShadow: "0 2px 12px rgba(255,85,0,0.35)",
-  },
-  content: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-    overflow: "hidden",
-  },
-  header: {
-    padding: "28px 40px 20px",
-    borderBottom: "1px solid var(--border)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexShrink: 0,
-    background: "rgba(13,13,16,0.8)",
-    backdropFilter: "blur(12px)",
-  },
-  coachAvatar: {
-    width: 52, height: 52, borderRadius: 16,
-    background: "linear-gradient(135deg, rgba(255,85,0,0.2), rgba(255,136,68,0.1))",
-    border: "1px solid rgba(255,85,0,0.25)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    flexShrink: 0,
-  },
-  chatBox: {
-    flex: 1,
-    overflowY: "auto",
-    padding: "24px 40px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-  },
-  emptyIcon: {
-    width: 88, height: 88, borderRadius: 24,
-    background: "linear-gradient(135deg, rgba(255,85,0,0.15), rgba(255,136,68,0.08))",
-    border: "1px solid rgba(255,85,0,0.2)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    boxShadow: "0 8px 32px rgba(255,85,0,0.15)",
-  },
-  inputArea: {
-    padding: "20px 40px 24px",
-    borderTop: "1px solid var(--border)",
-    flexShrink: 0,
-    background: "rgba(13,13,16,0.9)",
-    backdropFilter: "blur(12px)",
-  },
-  inputBox: {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: 12,
-    padding: "14px 16px",
-    borderRadius: 16,
-    background: "var(--surface2)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    transition: "border-color 0.2s, box-shadow 0.2s",
-  },
+  logoSub: { fontSize: 17, fontWeight: 700, letterSpacing: "0.18em", color: "var(--orange)", lineHeight: 1.1 },
+  sidebarDivider: { height: 1, background: "linear-gradient(90deg, transparent, rgba(255,85,0,0.2), transparent)", marginBottom: 16 },
+  sidebarFooter: { display: "flex", alignItems: "center", gap: 12, padding: "14px 12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" },
+  avatarCircle: { width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #ff5500, #ff8844)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, boxShadow: "0 2px 12px rgba(255,85,0,0.35)" },
+  content: { flex: 1, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" },
+  header: { padding: "28px 40px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: "rgba(13,13,16,0.8)", backdropFilter: "blur(12px)" },
+  coachAvatar: { width: 52, height: 52, borderRadius: 16, background: "linear-gradient(135deg, rgba(255,85,0,0.2), rgba(255,136,68,0.1))", border: "1px solid rgba(255,85,0,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  chatBox: { flex: 1, overflowY: "auto", padding: "24px 40px", display: "flex", flexDirection: "column", gap: 20 },
+  emptyIcon: { width: 88, height: 88, borderRadius: 24, background: "linear-gradient(135deg, rgba(255,85,0,0.15), rgba(255,136,68,0.08))", border: "1px solid rgba(255,85,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(255,85,0,0.15)" },
+  inputArea: { padding: "20px 40px 24px", borderTop: "1px solid var(--border)", flexShrink: 0, background: "rgba(13,13,16,0.9)", backdropFilter: "blur(12px)" },
+  inputBox: { display: "flex", alignItems: "flex-end", gap: 12, padding: "14px 16px", borderRadius: 16, background: "var(--surface2)", border: "1px solid rgba(255,255,255,0.08)", transition: "border-color 0.2s, box-shadow 0.2s" },
 };

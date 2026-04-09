@@ -1,8 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// Inject global styles + keyframes
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -19,7 +18,7 @@ const GlobalStyles = () => (
       --border: rgba(255,255,255,0.05);
       --text: #f0f0f0;
       --muted: #555;
-      --muted2: #888;
+      --muted2: #ffffff;
     }
 
     body { background: var(--bg); }
@@ -47,7 +46,7 @@ const GlobalStyles = () => (
       opacity: 0;
       transition: opacity 0.2s ease;
     }
-    .sidebar-item:hover { color: #ddd; }
+    .sidebar-item:hover { color: #fff; }
     .sidebar-item:hover::before { opacity: 0.5; }
     .sidebar-item.active {
       color: var(--orange);
@@ -137,6 +136,7 @@ const GlobalStyles = () => (
 );
 
 export default function Dashboard() {
+  const location = useLocation();
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : { name: "Athlete" };
 
@@ -144,57 +144,61 @@ export default function Dashboard() {
   const hour = new Date().getHours();
 
   const [userProgress, setUserProgress] = useState({
-  workoutsCompleted: 0,
-  streak: 0,
-  calories: 0,
-});
+    workoutsCompleted: 0,
+    streak: 0,
+    calories: 0,
+  });
 
   let greeting = "GOOD MORNING";
   if (hour >= 12 && hour < 18) greeting = "GOOD AFTERNOON";
   if (hour >= 18) greeting = "GOOD EVENING";
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const progressRes = await axios.get(
-        `http://localhost:5001/api/progress/${user._id}`
-      );
-
-      const caloriesRes = await axios.get(
-        `http://localhost:5001/api/calories/${user._id}`
-      );
-
-      setUserProgress({
-        workoutsCompleted: progressRes.data.workoutsCompleted || 0,
-        streak: progressRes.data.streak || 0,
-        calories: caloriesRes.data.calories || 0,
-      });
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  if (user?._id) fetchData();
-}, [user?._id]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const progressRes = await axios.get(
+          `http://localhost:5001/api/progress/${user._id}`
+        );
+        const caloriesRes = await axios.get(
+          `http://localhost:5001/api/calories/${user._id}`
+        );
+        const progressData = progressRes.data;
+        const workoutsCompleted = progressData.length;
+        let streak = 0;
+        const today = new Date();
+        progressData.forEach((p) => {
+          const diff = (today - new Date(p.date)) / (1000 * 60 * 60 * 24);
+          if (diff <= 1) streak++;
+        });
+        setUserProgress({
+          workoutsCompleted,
+          streak,
+          calories: caloriesRes.data.calories || 0,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (user?._id) fetchData();
+  }, [user?._id]);
 
   const completed = userProgress.workoutsCompleted || 0;
   const total = 30;
   const progress = Math.min(Math.round((completed / total) * 100), 100);
 
   const navItems = [
-  { icon: '🏋️', label: 'Workout', path: "/workout" },
-  { icon: '🥗', label: 'Diet', path: "/diet" },
-  { icon: '🔥', label: 'Calories' },
-  { icon: '📈', label: 'Progress' },
-  { icon: '🤖', label: 'Chatbot', path: "/coach" }
+    { icon: '🏋️', label: 'Workout', path: "/workout" },
+    { icon: '🥗', label: 'Diet', path: "/diet" },
+    { icon: '🔥', label: 'Calories', path: "/calories" },
+    { icon: '📈', label: 'Progress', path: "/progress" },
+    { icon: '🤖', label: 'Chatbot', path: "/coach" },
   ];
 
   const moduleItems = [
     { icon: '🏋️', label: 'Workout Plans', sub: 'View your routines', path: "/workout" },
-    { icon: '🥗', label: 'Diet Plans', sub: 'Track nutrition' },
-    { icon: '🔥', label: 'Calorie Tracker', sub: 'Daily intake log' },
-    { icon: '🤖', label: 'AI Chatbot', sub: 'Your fitness coach' },
+    { icon: '🥗', label: 'Diet Plans', sub: 'Track nutrition', path: "/diet" },
+    { icon: '🔥', label: 'Calorie Tracker', sub: 'Daily intake log', path: "/calories" },
+    { icon: '🤖', label: 'AI Chatbot', sub: 'Your fitness coach', path: "/coach" },
   ];
 
   return (
@@ -204,7 +208,6 @@ useEffect(() => {
 
         {/* Sidebar */}
         <div style={styles.sidebar}>
-          {/* Subtle side orb */}
           <div className="orb" style={{ width: 160, height: 160, background: 'radial-gradient(circle, rgba(255,85,0,0.12), transparent)', top: 60, left: -60, animationDelay: '0s' }} />
 
           <div>
@@ -224,12 +227,12 @@ useEffect(() => {
               {navItems.map((item, i) => (
                 <div
                   key={i}
-                  className={`sidebar-item ${i === 0 ? 'active' : ''}`}
+                  className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
                   onClick={() => item.path && navigate(item.path)}
                 >
                   <span style={{ fontSize: 15, lineHeight: 1 }}>{item.icon}</span>
                   {item.label}
-                  {i === 0 && (
+                  {location.pathname === item.path && (
                     <span style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: 'var(--orange)', display: 'inline-block' }} className="streak-pulse" />
                   )}
                 </div>
@@ -256,7 +259,6 @@ useEffect(() => {
         {/* Main Content */}
         <div style={styles.content}>
 
-          {/* Background orbs */}
           <div className="orb" style={{ width: 400, height: 400, background: 'radial-gradient(circle, rgba(255,85,0,0.06), transparent)', top: -100, right: -100, animationDelay: '2s' }} />
           <div className="orb" style={{ width: 300, height: 300, background: 'radial-gradient(circle, rgba(255,136,68,0.04), transparent)', bottom: 100, left: 100, animationDelay: '4s' }} />
 
@@ -311,7 +313,7 @@ useEffect(() => {
           {/* Stats Cards */}
           <div style={styles.cards} className="fade-up-3">
             {[
-              {icon: '🔥',label: 'Calories',value: `${userProgress.calories} kcal`,accent: '#ff5500'},
+              { icon: '🔥', label: 'Calories', value: `${userProgress.calories} kcal`, accent: '#ff5500' },
               { icon: '🏋️', label: 'Workouts Done', value: String(userProgress.workoutsCompleted), accent: '#ff8844' },
               { icon: '📈', label: 'Day Streak', value: `${userProgress.streak} days`, accent: '#ffaa55' },
             ].map((card, i) => (
@@ -321,16 +323,16 @@ useEffect(() => {
                     {card.icon}
                   </div>
                   <div
-  className="streak-pulse"
-  style={{
-    width: 8,
-    height: 8,
-    borderRadius: "50%",
-    background: card.accent,
-    boxShadow: `0 0 12px ${card.accent}`,
-    animationDelay: `${i * 0.3}s`,
-  }}
-/>
+                    className="streak-pulse"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: card.accent,
+                      boxShadow: `0 0 12px ${card.accent}`,
+                      animationDelay: `${i * 0.3}s`,
+                    }}
+                  />
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 6, fontWeight: 500 }}>{card.label.toUpperCase()}</div>
                 <div style={{ fontSize: 30, fontFamily: "'Bebas Neue', cursive", color: 'var(--text)', letterSpacing: '0.05em', lineHeight: 1 }}>{card.value}</div>

@@ -56,7 +56,7 @@ router.post("/update", async (req, res) => {
 
     } else {
 
-      // replace calories (not add)
+      
       data.calories = calories;
       data.goal = goal;
 

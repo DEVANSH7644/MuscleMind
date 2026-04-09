@@ -4,43 +4,43 @@ const axios = require("axios");
 
 router.post("/", async (req, res) => {
   try {
-    const { message, user, calories } = req.body;
-
-    const prompt = `
-You are a professional fitness coach.
-
-User Name: ${user?.name}
-
-Calories consumed today: ${calories?.calories || 0}
-Daily calorie goal: ${calories?.goal || "unknown"}
-
-User question:
-${message}
-
-Give helpful fitness advice related to workouts, diet, and nutrition.
-Keep answers short and practical.
-`;
+    const { message } = req.body;
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      "https://api.groq.com/openai/v1/chat/completions",
       {
-        contents: [
+        model: "llama-3.1-8b-instant",
+        messages: [
           {
-            parts: [{ text: prompt }]
+            role: "system",
+            content:
+              "You are a professional fitness coach. Give short, practical, motivating answers."
+          },
+           ...req.body.history,
+          {
+            role: "user",
+            content: message
           }
-        ]
+        ],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        },
       }
     );
 
-    const reply =
-      response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "AI could not respond.";
+    const reply = response.data.choices[0].message.content;
 
     res.json({ reply });
 
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({ reply: "AI error occurred." });
+  } catch (err) {
+    console.error("AI ERROR:", err.response?.data || err.message);
+
+    res.status(500).json({
+      reply: "AI failed. Check backend console.",
+    });
   }
 });
 
